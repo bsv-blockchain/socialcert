@@ -11,7 +11,6 @@ import { sendVerificationEmail, acquireEmailCertificate } from "./utils/emailUti
 import { toast } from "react-toastify"
 import { WalletClient, AuthFetch, IdentityClient } from "@bsv/sdk"
 
-
 const EmailVerification = () => {
   // Constructors ======================================================================
   const constants = getConstants()
@@ -34,7 +33,6 @@ const EmailVerification = () => {
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [isChecked, setIsChecked] = useState(true)
 
-
   // Effects ====================================================================
 
   useEffect(() => {
@@ -54,34 +52,34 @@ const EmailVerification = () => {
   // Handlers ====================================================================
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
-    console.log("submitted form")
     e.preventDefault()
 
     const validEmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-    //    const identityKey = await clientWallet.getPublicKey({ identityKey: true })
     if (!validEmailRegex.test(email)) {
       setValid(false)
+      toast.error("Please enter a valid email address")
       return
     }
 
     setIsSubmitting(true)
 
     const data = { email, funcAction: "sendEmail" }
-    console.log("data: ", data)
     try {
       const responseData = await sendVerificationEmail(email)
       setEmailSentStatus(responseData.emailSentStatus)
       setSentEmail(responseData.sentEmail)
-
-      setHasSubmitted(true)
+      if (responseData?.emailSentStatus) {
+        toast.success(`Verification email sent to ${responseData.sentEmail || email}`)
+        setHasSubmitted(true)
+      } else {
+        toast.error("Request succeeded, but the server did not confirm sending an email. Please try again.")
+      }
     } catch (error) {
-      console.error(
-        "Error in fetch call to email verification occurred:",
-        error
-      )
-    } finally {
+      toast.error('Unable to send verification email. Please try again.')
       setIsSubmitting(false)
+      return
     }
+    setIsSubmitting(false)
   }
 
   const handleVerificationSubmit = async (
@@ -91,9 +89,6 @@ const EmailVerification = () => {
 
     // Guard/early return for locked or no email sent status
     if (!emailSentStatus || locked) {
-      console.error(
-        "No email sent status found, or has been locked from too many attempts."
-      )
       toast.error(
         "No email sent status found, or has been locked from too many attempts."
       )
@@ -107,8 +102,9 @@ const EmailVerification = () => {
       funcAction: "verifyCode",
     }
     try {
-      const clientWallet = new WalletClient('json-api', 'localhost')
-      const response = await new AuthFetch(clientWallet).fetch(getBackendUrl("email"), {
+      const clientWallet = new WalletClient("auto")
+      let AF = await new AuthFetch(clientWallet)
+      const response = await AF.fetch('https://backend.socialcert.net/handleEmailVerification', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -118,27 +114,36 @@ const EmailVerification = () => {
 
       const responseData = await response.json()
       if (responseData.verificationStatus) {
-        const newCertificate = await acquireEmailCertificate(responseData.certType, data.verifyEmail)
-        if (isChecked) {
-          const publicationResult = await new IdentityClient(new WalletClient()).publiclyRevealAttributes(
-            newCertificate,
-            ['email'],
-          )
-          console.log('PUBLIC REVELATION RESULT:', publicationResult)
+        try {
+          const newCertificate = await acquireEmailCertificate(responseData.certType, data.verifyEmail)
+          if (isChecked) {
+            const publicationResult = await new IdentityClient(clientWallet).publiclyRevealAttributes(
+              newCertificate,
+              ['email'],
+            )
+          }
+        } catch (certError) {
+          toast.warn('Code verified, but certificate issuance/publication failed. You can retry later.')
         }
+        toast.success("Code verified")
         navigate("/EmailVerification/VerifyResult/success")
       } else {
         if (verificationAttempts === 1) {
           setLocked(true)
+          toast.error("Too many attempts. Locked for 10 minutes.")
         }
-        setVerificationAttempts(verificationAttempts - 1)
+        const nextAttempts = verificationAttempts - 1
+        setVerificationAttempts(nextAttempts)
+        if (nextAttempts >= 0) {
+          toast.error(`Invalid code. Attempts left: ${nextAttempts}`)
+        }
       }
 
       setSuccessStatus(true)
       if (!successStatus) {
       }
     } catch (error) {
-      console.error("Error in handling verification of email code:", error)
+      toast.error('Verification failed. Please try again.')
       setSuccessStatus(false)
       navigate("/EmailVerification/VerifyResult/error")
     }
@@ -163,16 +168,47 @@ const EmailVerification = () => {
           <form onSubmit={handleEmailSubmit}>
             <div className="flex-wrap">
               <input
-                type="text"
+                type="email"
                 name="emailField"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="email-input"
-                placeholder="janedoe@gmail.com"
+                placeholder="janedoe@email.com"
+                autoComplete="email"
+                inputMode="email"
+                enterKeyHint="send"
                 required
               />
-              <button type="submit" className="submit-button">
-                Submit
+              <button
+                type="submit"
+                className="fancy-button"
+                disabled={isSubmitting || !email}
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="btn-spinner" aria-hidden="true" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M3 12H19M19 12L13 6M19 12L13 18"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    Send code
+                  </>
+                )}
               </button>
             </div>
           </form>

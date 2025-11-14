@@ -50,3 +50,45 @@
     box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.1) inset !important; // Apply for potential non-WebKit browsers
   }
 }
+
+.fancy-button {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  padding: 0.9rem 1.25rem;
+  border-radius: $borderRadius;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  max-width: none;
+  box-shadow: 0 8px 20px rgba(0, 114, 255, 0.35);
+  transition: transform 0.12s ease, box-shadow 0.2s ease;
+
+  &:active {
+    transform: translateY(1px) scale(0.99);
+    box-shadow: 0 4px 14px rgba(0, 114, 255, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+}
+
+.btn-spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

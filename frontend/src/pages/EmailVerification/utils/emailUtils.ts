@@ -1,7 +1,7 @@
 import { getBackendUrl, getBaseUrl } from "../../../utils/getBackendUrl"
 import { WalletClient, AuthFetch, AcquireCertificateResult } from "@bsv/sdk"
 
-const clientWallet = new WalletClient('json-api', 'localhost')
+const clientWallet = new WalletClient('auto')
 
 export const sendVerificationEmail = async (email: string) => {
   try {
