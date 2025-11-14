@@ -117,7 +117,7 @@ const EmailVerification = () => {
         try {
           const newCertificate = await acquireEmailCertificate(responseData.certType, data.verifyEmail)
           if (isChecked) {
-            const publicationResult = await new IdentityClient(new WalletClient('auto')).publiclyRevealAttributes(
+            const publicationResult = await new IdentityClient(clientWallet).publiclyRevealAttributes(
               newCertificate,
               ['email'],
             )
