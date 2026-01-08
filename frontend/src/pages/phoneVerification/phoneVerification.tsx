@@ -2,10 +2,8 @@ import { useState } from "react"
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input"
 import "react-phone-number-input/style.css"
 
-import { Signia } from "babbage-signia"
 import { useNavigate } from "react-router-dom"
 import socialCertLogo from "../../assets/images/socialCert.svg"
-import getConstants from "../../utils/getConstants"
 
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner"
 import NavigateButton from "../../components/NavigateButton"
@@ -15,9 +13,6 @@ import { sendVerificationText } from "./utils/phoneUtils"
 
 const PhoneVerification = () => {
   // Constructors ===========================================================
-  // const authrite = new Authrite()
-  const signia = new Signia()
-  signia.config.confederacyHost = getConstants().confederacyUrl
   const navigate = useNavigate()
 
   // State ==================================================================
@@ -28,7 +23,7 @@ const PhoneVerification = () => {
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Phone number response from authrite, used in EnterPhoneCode
+  // Phone number response from backend, used in EnterPhoneCode
   const [
     textSentPhonenumber,
     setTextSentPhonenumber,
@@ -65,7 +60,8 @@ const PhoneVerification = () => {
     }
   }
 
-  const handlePhoneInputChange = (value: string) => {
+  const handlePhoneInputChange = (value?: string) => {
+    if (!value) return
     const regex = /[a-zA-Z]/
     if (!regex.test(value)) {
       setPhoneNumber(value)

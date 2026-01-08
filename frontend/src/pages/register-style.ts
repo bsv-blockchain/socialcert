@@ -1,17 +1,17 @@
 import { makeStyles } from '@mui/styles'
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   background: {
     backgroundColor: '#0F0529',
   },
   title: {
     top: 0,
     left: 0,
-     paddingBottom: '10em' 
+    paddingBottom: '10em'
   },
   form: {
     paddingTop: '0.5em',
-    paddingBottom: '2em'  
+    paddingBottom: '2em'
   },
   button: {
     paddingTop: '1.5em',

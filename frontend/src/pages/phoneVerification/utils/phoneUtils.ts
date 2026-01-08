@@ -1,12 +1,12 @@
-import { Authrite } from "authrite-js"
 import { getBackendUrl } from "../../../utils/getBackendUrl"
+import { WalletClient, AuthFetch } from "@bsv/sdk"
 
-const authrite = new Authrite()
+const clientWallet = new WalletClient('auto')
 
 export const sendVerificationText = async (phoneNumber: string) => {
   try {
     const data = { phoneNumber, funcAction: "sendText" }
-    const response = await authrite.request(getBackendUrl("phone"), {
+    const response = await new AuthFetch(clientWallet).fetch(getBackendUrl("phone"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

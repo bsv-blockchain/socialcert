@@ -79,7 +79,7 @@ const DiscordVerification = () => {
 
       }
     } catch (error) {
-      console.error("Error in processing authrite request", error)
+      console.error("Error in processing request", error)
       navigate('/DiscordVerification/VerifyResults/error')
     } finally {
       setIsLoading(false)
@@ -122,7 +122,7 @@ const DiscordVerification = () => {
       ) : (
         <>
           <button id="discord-cert-button" className="sign-in-button" onClick={handleSignIn}>
-            Sign in with <FaDiscord/>
+            Sign in with <FaDiscord />
           </button>
 
           <div className="checkbox-container">

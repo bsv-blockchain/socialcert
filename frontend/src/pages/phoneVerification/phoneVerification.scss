@@ -1,4 +1,4 @@
-@import "../../styles/styleVariables.scss";
+@use "../../styles/variables" as vars;
 
 :root {
   --PhoneInput-color--focus: transparent;

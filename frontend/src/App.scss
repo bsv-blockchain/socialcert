@@ -1,4 +1,4 @@
-@import "./styles/styleVariables.scss";
+@use "./styles/variables" as vars;
 
   @font-face {
     font-family: "Comfortaa";
@@ -98,7 +98,7 @@
     height: 2.5rem;
     padding: 0.5rem 1rem;
     border: 1px solid white;
-    border-radius: $borderRadius;
+    border-radius: vars.$borderRadius;
     color: white;
     background-color: rgba(
       0,
@@ -135,7 +135,7 @@
   }
 
   #phone-cert-button {
-    background-color: $greenColor;
+    background-color: vars.$greenColor;
   }
 
   #x-cert-button {
@@ -157,14 +157,14 @@
 
   .submit-button {
     border: none;
-    background: $greenColor;
+    background: vars.$greenColor;
     align-self: center;
   }
 
   .verify-input {
     padding: 1rem;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: $borderRadius;
+    border-radius: vars.$borderRadius;
     border: none;
     margin: 0.5rem;
   }
@@ -174,7 +174,7 @@
     color: white;
     font-weight: 600;
     padding: 0.75rem 1.5rem;
-    border-radius: $borderRadius;
+    border-radius: vars.$borderRadius;
     font-size: 1.1rem;
     margin-top: 1rem;
     margin-bottom: 1rem;

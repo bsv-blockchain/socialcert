@@ -1,13 +1,12 @@
 import socialCertLogo from "../../../assets/images/socialCert.svg"
 import GoBackButton from "../../../components/NavigateButton"
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner"
-import { Signia } from "babbage-signia"
 import getConstants from "../../../utils/getConstants"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { usePhoneStore } from "../../../stores/stores"
-import { Authrite } from "authrite-js"
-import { getBackendUrl } from "../../../utils/getBackendUrl"
+import { WalletClient, AuthFetch, IdentityClient } from "@bsv/sdk"
+import { getBackendUrl, getBaseUrl } from "../../../utils/getBackendUrl"
 import { formatPhoneNumber } from "react-phone-number-input"
 
 import "./EnterPhoneCode.scss"
@@ -15,20 +14,12 @@ import NavigateButton from "../../../components/NavigateButton"
 import { sendVerificationText } from "../utils/phoneUtils"
 import { toast } from "react-toastify"
 
-// TODO: Correct response type should be updated in Signia
-interface SigniaResponse {
-  status?: string
-  description?: string
-  code?: string
-}
+const clientWallet = new WalletClient('auto')
 
 const EnterPhoneCode = () => {
   // Constructors ============================================================
   const constants = getConstants()
-  const signia = new Signia()
-  signia.config.confederacyHost = constants.confederacyUrl
   const navigate = useNavigate()
-  const authrite = new Authrite()
 
   // State ===================================================================
   const [successStatus, setSuccessStatus] = useState(false)
@@ -51,32 +42,24 @@ const EnterPhoneCode = () => {
 
   // Handlers ================================================================
 
-  const callSignia: (data: SigniaData) => Promise<void> = async (data) => {
-    const response: SigniaResponse = await signia.publiclyRevealAttributes(
-      {},
-      constants.certifierUrl,
-      constants.certifierPublicKey,
-      constants.certificateTypes.phone,
-      true,
-      {
-        phoneNumber: data.verifiedPhonenumber,
-        verificationType: "phoneNumber",
-      },
-      async (message: any) => {
-        // Process message here if necessary
+  const acquirePhoneCertificate = async (verifiedPhonenumber: string) => {
+    const newCertificate = await clientWallet.acquireCertificate({
+      certifier: constants.certifierPublicKey,
+      certifierUrl: getBaseUrl(),
+      type: constants.certificateTypes.phone,
+      acquisitionProtocol: 'issuance',
+      fields: {
+        phoneNumber: verifiedPhonenumber,
       }
+    })
+
+    // Publicly reveal the phone number attribute
+    await new IdentityClient(clientWallet).publiclyRevealAttributes(
+      newCertificate,
+      ['phoneNumber'],
     )
 
-    // Check if any HTTP errors were thrown
-    if (response.status === 'error') {
-      throw new Error(response.description)
-    }
-
     setSuccessStatus(true)
-
-    if (!successStatus) {
-      navigate("/")
-    }
   }
 
   useEffect(() => {
@@ -103,7 +86,7 @@ const EnterPhoneCode = () => {
     }
 
     try {
-      const response = await authrite.request(getBackendUrl("phone"), {
+      const response = await new AuthFetch(clientWallet).fetch(getBackendUrl("phone"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -114,9 +97,7 @@ const EnterPhoneCode = () => {
       const responseData: VerificationResponse = await response.json()
 
       if (responseData.verificationStatus && responseData.verifiedPhonenumber) {
-        const signiaResponse = await callSignia({
-          verifiedPhonenumber: responseData.verifiedPhonenumber,
-        }) // Pass as SigniaData
+        await acquirePhoneCertificate(responseData.verifiedPhonenumber)
       } else {
         if (verificationAttempts === 1) {
           setLocked(true)

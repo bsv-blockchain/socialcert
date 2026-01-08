@@ -1,11 +1,11 @@
-@import "../../styles/styleVariables.scss";
+@use "../../styles/variables" as vars;
 
 .code-input-container {
   // position: relative;
   // border: 1px solid red;
   padding: 0.5rem;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: $borderRadius;
+  border-radius: vars.$borderRadius;
 
   input {
     background: transparent;
@@ -44,7 +44,7 @@
 }
 
 .verify-button {
-  background:$greenColor;
+  background: vars.$greenColor;
   border:none;
   &:disabled {
     background:gray;

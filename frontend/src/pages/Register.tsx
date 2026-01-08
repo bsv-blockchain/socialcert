@@ -1,4 +1,4 @@
-import React from "react" // necessary for JSX, but not TSX files
+import React from "react"
 import { useNavigate } from "react-router-dom"
 import "react-toastify/dist/ReactToastify.css"
 

@@ -1,4 +1,4 @@
-@import "../../styles/styleVariables.scss";
+@use "../../styles/variables" as vars;
 
 .email-input {
   background: rgba(
@@ -9,7 +9,7 @@
   ) !important; // Main background for normal state
   border: none;
   padding: 1rem;
-  border-radius: $borderRadius;
+  border-radius: vars.$borderRadius;
   color: white !important; // Main text color
   font-size: 1.25rem;
   min-width: 18rem;
@@ -57,7 +57,7 @@
   color: #fff;
   font-weight: 600;
   padding: 0.9rem 1.25rem;
-  border-radius: $borderRadius;
+  border-radius: vars.$borderRadius;
   display: inline-flex;
   align-items: center;
   justify-content: center;

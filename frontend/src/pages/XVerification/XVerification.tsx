@@ -78,7 +78,7 @@ const XVerification = () => {
         navigate('/XVerification/VerifyResult/success')
       }
     } catch (error) {
-      console.error("Error in processing authrite request", error)
+      console.error("Error in processing request", error)
       navigate('/XVerification/VerifyResult/error')
     } finally {
       setIsLoading(false)
@@ -105,7 +105,7 @@ const XVerification = () => {
       window.location.href = `https://api.twitter.com/oauth/authenticate?oauth_token=${requestTokenData.requestToken}`
     } catch (error) {
       setIsLoading(false);
-      console.error("Error in processing authrite request", error)
+      console.error("Error in processing request", error)
       navigate('/XVerification/VerifyResult/error')
     }
   }
