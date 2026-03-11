@@ -1,0 +1,7 @@
+export { default as healthRouter } from './health'
+export { default as metricsRouter } from './metrics'
+export { default as manifestRouter } from './manifest'
+export { default as emailVerificationRouter } from './emailVerification'
+export { default as phoneVerificationRouter } from './phoneVerification'
+export { default as xVerificationRouter } from './xVerification'
+export { default as signCertificateRouter } from './signCertificate'

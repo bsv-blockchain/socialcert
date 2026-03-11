@@ -5,20 +5,25 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 
-COPY . .
+COPY tsconfig.json ./
+COPY src ./src
 RUN npm run build
 
 # ─── Production stage ────────────────────────────────────────────────────────
-FROM nginx:alpine AS production
+FROM node:22-alpine AS production
+WORKDIR /app
 
 RUN apk add --no-cache wget
 
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev
 
-EXPOSE 3000
+COPY --from=builder /app/out ./out
 
-HEALTHCHECK --interval=15s --timeout=5s --retries=3 \
-  CMD wget -qO- http://localhost:3000/ || exit 1
+EXPOSE 8080
 
-CMD ["nginx", "-g", "daemon off;"]
+HEALTHCHECK --interval=15s --timeout=5s --retries=3 --start-period=30s \
+  CMD wget -qO- http://localhost:8080/health || exit 1
+
+USER node
+CMD ["node", "out/index.js"]

@@ -1,0 +1,220 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Shell } from '@/components/layout/Shell'
+import { ProgressStepper } from '@/components/ProgressStepper'
+import { CodeInput } from '@/components/CodeInput'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
+import { Switch } from '@radix-ui/react-switch'
+import { Mail, Loader2, ArrowLeft, RefreshCw } from 'lucide-react'
+import { toast } from 'sonner'
+import { getWalletClient, getAuthFetch, getIdentityClient } from '@/lib/wallet'
+import { getCertifierConfig, getApiBaseUrl, CERTIFICATE_TYPES } from '@/lib/constants'
+import { useVerificationStore } from '@/stores/verification'
+import { motion, AnimatePresence } from 'framer-motion'
+
+const steps = [{ label: 'Enter Email' }, { label: 'Verify Code' }, { label: 'Certificate Issued' }]
+
+export default function EmailVerification() {
+  const navigate = useNavigate()
+  const { shouldRevealPublicly, setShouldRevealPublicly } = useVerificationStore()
+  const [step, setStep] = useState(0)
+  const [email, setEmail] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [remainingAttempts, setRemainingAttempts] = useState(5)
+
+  const handleSendCode = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email) return
+
+    setIsSubmitting(true)
+    try {
+      const authFetch = getAuthFetch()
+      const res = await authFetch.fetch(`${getApiBaseUrl()}/api/verify/email/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
+      if (data.status === 'success' && data.data.emailSentStatus) {
+        toast.success(`Verification code sent to ${email}`)
+        setStep(1)
+      } else {
+        toast.error('Failed to send verification email')
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send verification email')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleVerifyCode = async (code: string) => {
+    setIsSubmitting(true)
+    try {
+      const authFetch = getAuthFetch()
+      const res = await authFetch.fetch(`${getApiBaseUrl()}/api/verify/email/check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code }),
+      })
+      const data = await res.json()
+
+      if (data.status === 'success' && data.data.verificationStatus) {
+        toast.success('Email verified!')
+
+        // Acquire the certificate
+        const wallet = getWalletClient()
+        const { certifierPublicKey, certifierUrl } = getCertifierConfig()
+        const newCert = await wallet.acquireCertificate({
+          certifier: certifierPublicKey,
+          certifierUrl,
+          type: CERTIFICATE_TYPES.email,
+          acquisitionProtocol: 'issuance',
+          fields: { email },
+        })
+
+        // Optionally reveal publicly
+        if (shouldRevealPublicly) {
+          try {
+            await getIdentityClient().publiclyRevealAttributes(newCert, ['email'])
+          } catch {
+            toast.warning('Certificate issued but public revelation failed')
+          }
+        }
+
+        setStep(2)
+      } else {
+        const remaining = data.data?.remainingAttempts ?? remainingAttempts - 1
+        setRemainingAttempts(remaining)
+        toast.error(`Invalid code. ${remaining} attempts remaining.`)
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Verification failed')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleResend = async () => {
+    try {
+      const authFetch = getAuthFetch()
+      await authFetch.fetch(`${getApiBaseUrl()}/api/verify/email/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      toast.success('New code sent!')
+    } catch {
+      toast.error('Failed to resend code')
+    }
+  }
+
+  return (
+    <Shell>
+      <div className="mx-auto max-w-lg px-6 py-12">
+        <ProgressStepper steps={steps} currentStep={step} />
+
+        <AnimatePresence mode="wait">
+          {step === 0 && (
+            <motion.div key="step0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 mb-6">
+                    <Mail className="h-6 w-6" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-text-primary mb-2">Verify your email</h2>
+                  <p className="text-sm text-text-secondary mb-6">Enter your email address and we'll send you a verification code.</p>
+
+                  <form onSubmit={handleSendCode} className="space-y-4">
+                    <Input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      autoFocus
+                    />
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={shouldRevealPublicly}
+                          onChange={(e) => setShouldRevealPublicly(e.target.checked)}
+                          className="rounded border-border"
+                        />
+                        Publicly reveal certificate
+                      </label>
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isSubmitting || !email}>
+                      {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                      Send verification code
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {step === 1 && (
+            <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <h2 className="text-xl font-semibold text-text-primary mb-2">Check your email</h2>
+                  <p className="text-sm text-text-secondary mb-8">
+                    Enter the 6-digit code sent to <span className="font-medium text-text-primary">{email}</span>
+                  </p>
+
+                  <CodeInput onComplete={handleVerifyCode} disabled={isSubmitting} />
+
+                  {isSubmitting && (
+                    <div className="flex items-center justify-center gap-2 mt-6 text-sm text-text-secondary">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Verifying...
+                    </div>
+                  )}
+
+                  <div className="mt-6 space-y-2">
+                    <button onClick={handleResend} className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline cursor-pointer">
+                      <RefreshCw className="h-3 w-3" /> Resend code
+                    </button>
+                    <p className="text-xs text-text-secondary">Attempts remaining: {remainingAttempts}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {step === 2 && (
+            <motion.div key="step2" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 mx-auto mb-4">
+                    <Mail className="h-8 w-8" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-text-primary mb-2">Email Verified!</h2>
+                  <p className="text-sm text-text-secondary mb-6">
+                    Your email certificate has been issued and stored in your wallet.
+                  </p>
+                  <div className="flex gap-3 justify-center">
+                    <Button onClick={() => navigate('/certificates')}>View Certificates</Button>
+                    <Button variant="outline" onClick={() => navigate('/')}>Verify Another</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {step < 2 && (
+          <div className="mt-6 text-center">
+            <Button variant="ghost" onClick={() => step === 0 ? navigate('/') : setStep(0)}>
+              <ArrowLeft className="h-4 w-4" /> Go back
+            </Button>
+          </div>
+        )}
+      </div>
+    </Shell>
+  )
+}
