@@ -32,7 +32,7 @@ export function getCertifierConfig() {
 export function getApiBaseUrl(): string {
   const hostname = window.location.hostname
   if (hostname.includes('staging')) return 'https://staging-backend.socialcert.net'
-  if (hostname === 'localhost' || hostname === '127.0.0.1') return ''  // Vite proxy handles /api
+  if (hostname === 'localhost' || hostname === '127.0.0.1') return 'http://localhost:8080'
   return 'https://backend.socialcert.net'
 }
 
