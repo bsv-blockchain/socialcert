@@ -1,13 +1,23 @@
 import { Request } from 'express'
 
 /**
- * Extends Express Request with BSV auth middleware fields
+ * Augment the Express Request type globally to include BSV auth middleware fields
+ * and our requestId middleware field.
  */
-export interface AuthRequest extends Request {
-  auth: {
-    identityKey: string
+declare global {
+  namespace Express {
+    interface Request {
+      auth: {
+        identityKey: string
+      }
+    }
   }
 }
+
+/**
+ * Type alias for authenticated requests (same as Express.Request after augmentation)
+ */
+export type AuthRequest = Request
 
 /**
  * Certificate type definition

@@ -13,9 +13,9 @@ export function useWallet() {
     async function check() {
       try {
         const wallet = getWalletClient()
-        const key = await wallet.getPublicKey({ identityKey: true })
+        const result = await wallet.getPublicKey({ identityKey: true })
         if (!cancelled) {
-          setIdentityKey(key)
+          setIdentityKey(result.publicKey)
           setWalletConnected(true)
         }
       } catch {

@@ -3,7 +3,8 @@ import { logger } from './utils/logger'
 import { connectToMongoDB, closeMongoConnection } from './db/mongo'
 import { connectToRedis, closeRedisConnection } from './services/redis'
 import { createApp } from './server'
-import { SetupWallet } from '@bsv/wallet-toolbox'
+import { Setup } from '@bsv/wallet-toolbox'
+import { WalletInterface } from '@bsv/sdk'
 
 async function main() {
   logger.info({ env: config.NODE_ENV }, 'Starting SocialCert backend...')
@@ -14,11 +15,11 @@ async function main() {
 
   // Initialize BSV wallet
   logger.info('Initializing BSV wallet...')
-  const wallet = await SetupWallet({
-    env: config.BSV_NETWORK === 'main' ? 'mainnet' : 'testnet',
+  const wallet = await Setup.createWalletClientNoEnv({
+    chain: config.BSV_NETWORK === 'main' ? 'main' : 'test',
     rootKeyHex: config.SERVER_PRIVATE_KEY,
     ...(config.WALLET_STORAGE_URL ? { storageUrl: config.WALLET_STORAGE_URL } : {}),
-  })
+  }) as unknown as WalletInterface
   logger.info('BSV wallet initialized')
 
   // Create and start the Express app

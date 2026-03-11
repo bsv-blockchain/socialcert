@@ -1,13 +1,12 @@
-import { Response, NextFunction } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import { checkRateLimit } from '../services/redis'
-import { AuthRequest } from '../types'
 
 /**
  * Creates a rate limiter middleware for authenticated routes.
  * Limits by identity key from BSV auth.
  */
 export function rateLimiter(maxRequests: number = 30, windowSeconds: number = 60) {
-  return async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const identityKey = req.auth?.identityKey
       if (!identityKey) {

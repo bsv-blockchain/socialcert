@@ -1,11 +1,8 @@
-import { Router, Response } from 'express'
-import { Certificate, MasterCertificate, Utils, WERR } from '@bsv/sdk'
-import { AuthRequest } from '../types'
+import { Router, Request, Response } from 'express'
+import { Certificate, MasterCertificate, Utils, createNonce, verifyNonce, WalletError } from '@bsv/sdk'
 import { certificateTypes, certifierPublicKeyHex } from '../certifier'
 import { findVerification, writeSignedCertificate } from '../db/mongo'
 import { logger } from '../utils/logger'
-
-const { verifyNonce, createNonce } = Utils
 
 const router = Router()
 
@@ -15,21 +12,38 @@ const router = Router()
  */
 router.post(
   '/api/sign-certificate',
-  async (req: AuthRequest, res: Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { clientNonce, type, fields, masterKeyring } = req.body
-      const identityKey = req.auth.identityKey
+      const identityKey = req.auth?.identityKey
 
       // Validate required arguments
-      if (!clientNonce) throw new WERR('Missing client nonce!', 'ERR_INVALID_PARAMETER', 400)
-      if (!type) throw new WERR('Missing certificate type!', 'ERR_INVALID_PARAMETER', 400)
-      if (!fields) throw new WERR('Missing certificate fields to sign!', 'ERR_INVALID_PARAMETER', 400)
-      if (!masterKeyring) throw new WERR('Missing masterKeyring to decrypt fields!', 'ERR_INVALID_PARAMETER', 400)
+      if (!identityKey) {
+        res.status(401).json({ status: 'error', message: 'Authentication required' })
+        return
+      }
+      if (!clientNonce) {
+        res.status(400).json({ status: 'error', message: 'Missing client nonce!' })
+        return
+      }
+      if (!type) {
+        res.status(400).json({ status: 'error', message: 'Missing certificate type!' })
+        return
+      }
+      if (!fields) {
+        res.status(400).json({ status: 'error', message: 'Missing certificate fields to sign!' })
+        return
+      }
+      if (!masterKeyring) {
+        res.status(400).json({ status: 'error', message: 'Missing masterKeyring to decrypt fields!' })
+        return
+      }
 
       // Verify the certificate type is supported
       const certType = certificateTypes[type]
       if (!certType) {
-        throw new WERR(`Unsupported certificate type: ${type}`, 'ERR_INVALID_PARAMETER', 400)
+        res.status(400).json({ status: 'error', message: `Unsupported certificate type: ${type}` })
+        return
       }
 
       // Import server from global context (set during startup)
@@ -43,75 +57,64 @@ router.post(
       const serverNonce = await createNonce(wallet, identityKey)
 
       // Compute the serial number as an HMAC
-      const serialNumber = Utils.toBase64(
-        await wallet.createHmac({
-          data: Utils.toArray(clientNonce + serverNonce, 'utf8'),
-          protocolID: [2, 'certificate issuance'],
-          keyID: serverNonce + clientNonce,
-          counterparty: identityKey,
-        })
-      )
+      const hmacResult = await wallet.createHmac({
+        data: Utils.toArray(clientNonce + serverNonce, 'utf8'),
+        protocolID: [2, 'certificate issuance'],
+        keyID: serverNonce + clientNonce,
+        counterparty: identityKey,
+      })
+      const serialNumber = Utils.toBase64(hmacResult.hmac)
 
-      // Decrypt the submitted fields
-      const masterCert = new MasterCertificate(
-        '1',          // version
-        serialNumber,
-        type,
-        identityKey,  // subject
-        certifierPublicKeyHex,
+      // Decrypt the submitted fields using the static method
+      const decryptedFields = await MasterCertificate.decryptFields(
+        wallet,
+        masterKeyring,
         fields,
-        masterKeyring
+        identityKey
       )
-      const decryptedFields = await MasterCertificate.decryptFields(wallet, masterCert, identityKey)
 
       // Validate the decrypted fields match expected cert type fields
       const expectedFields = certType.fields
       const actualFields = Object.keys(decryptedFields)
       for (const field of expectedFields) {
         if (!actualFields.includes(field)) {
-          throw new WERR(`Missing required field: ${field}`, 'ERR_INVALID_PARAMETER', 400)
+          res.status(400).json({ status: 'error', message: `Missing required field: ${field}` })
+          return
         }
       }
 
       // Check that a matching verification exists in MongoDB
       const verification = await findVerification(identityKey, decryptedFields)
       if (!verification) {
-        throw new WERR(
-          'No matching verification found. Please verify your identity first.',
-          'ERR_VERIFICATION_NOT_FOUND',
-          400
-        )
+        res.status(400).json({
+          status: 'error',
+          message: 'No matching verification found. Please verify your identity first.',
+        })
+        return
       }
 
-      // Use a dummy revocation outpoint (no on-chain revocation)
-      const revocationOutpoint =
-        '0000000000000000000000000000000000000000000000000000000000000000.0'
-
-      // Create and sign the certificate
-      const certificate = new Certificate(
-        type,
-        serialNumber,
+      // Use MasterCertificate.issueCertificateForSubject for proper certificate issuance
+      const masterCertificate = await MasterCertificate.issueCertificateForSubject(
+        wallet,
         identityKey,
-        certifierPublicKeyHex,
-        revocationOutpoint,
-        fields
+        decryptedFields,
+        type
       )
-      const signedCertificate = await certificate.sign(wallet)
 
       // Store the signed certificate
       await writeSignedCertificate(
         identityKey,
-        serialNumber,
-        signedCertificate as unknown as Record<string, unknown>
+        masterCertificate.serialNumber,
+        masterCertificate as unknown as Record<string, unknown>
       )
 
-      logger.info({ identityKey, type, serialNumber }, 'Certificate signed and issued')
+      logger.info({ identityKey, type, serialNumber: masterCertificate.serialNumber }, 'Certificate signed and issued')
 
-      res.json(signedCertificate)
+      res.json(masterCertificate)
     } catch (err: any) {
       logger.error({ err }, 'Certificate signing failed')
-      const statusCode = err.statusCode || err.code || 500
-      res.status(typeof statusCode === 'number' ? statusCode : 500).json({
+      const statusCode = err.code && typeof err.code === 'number' ? err.code : 500
+      res.status(statusCode).json({
         status: 'error',
         message: err.message || 'Certificate signing failed',
         requestId: req.requestId,

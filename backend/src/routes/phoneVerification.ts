@@ -1,6 +1,5 @@
-import { Router, Response } from 'express'
+import { Router, Request, Response } from 'express'
 import { z } from 'zod'
-import { AuthRequest } from '../types'
 import { validateBody } from '../middleware/validate'
 import { rateLimiter } from '../middleware/rateLimiter'
 import { sendPhoneVerification, checkPhoneVerification } from '../services/twilio'
@@ -20,7 +19,7 @@ router.post(
   '/api/verify/phone/send',
   rateLimiter(5, 600), // 5 sends per 10 minutes
   validateBody(sendPhoneSchema),
-  async (req: AuthRequest, res: Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { phoneNumber } = req.body
       const identityKey = req.auth.identityKey
@@ -59,7 +58,7 @@ router.post(
   '/api/verify/phone/check',
   rateLimiter(10, 600),
   validateBody(checkPhoneSchema),
-  async (req: AuthRequest, res: Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { phoneNumber, code } = req.body
       const identityKey = req.auth.identityKey

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { getWalletClient, getIdentityClient } from '@/lib/wallet'
-import { getCertifierConfig, CERTIFICATE_TYPES, CERT_TYPE_LABELS, CERT_TYPE_FIELDS } from '@/lib/constants'
+import { getCertifierConfig, CERTIFICATE_TYPES, CERT_TYPE_LABELS } from '@/lib/constants'
 import { toast } from 'sonner'
 
 export interface CertificateInfo {
@@ -71,8 +71,7 @@ export function useCertificates() {
 
       // Step 1: Revoke the public revelation from the overlay
       toast.info('Revoking public revelation...')
-      const fieldNames = CERT_TYPE_FIELDS[cert.type] || Object.keys(cert.fields)
-      await identityClient.revokeCertificateRevelation(cert.raw, fieldNames)
+      await identityClient.revokeCertificateRevelation(cert.serialNumber)
 
       // Step 2: Relinquish the certificate from the wallet
       toast.info('Removing certificate from wallet...')

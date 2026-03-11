@@ -1,6 +1,5 @@
 import { Router, Request, Response } from 'express'
 import { z } from 'zod'
-import { AuthRequest } from '../types'
 import { rateLimiter } from '../middleware/rateLimiter'
 import { validateBody } from '../middleware/validate'
 import { generateAuthUrl, handleCallback, shareCertification } from '../services/twitter'
@@ -15,7 +14,7 @@ const router = Router()
 router.post(
   '/api/verify/x/auth-url',
   rateLimiter(10, 600),
-  async (req: AuthRequest, res: Response) => {
+  async (req: Request, res: Response) => {
     try {
       const identityKey = req.auth.identityKey
       const { url, state } = await generateAuthUrl(identityKey)
@@ -74,7 +73,7 @@ router.get('/api/verify/x/callback', async (req: Request, res: Response) => {
 
 router.post(
   '/api/verify/x/check',
-  async (req: AuthRequest, res: Response) => {
+  async (req: Request, res: Response) => {
     try {
       const identityKey = req.auth.identityKey
 
@@ -124,7 +123,7 @@ router.post(
   '/api/x/share',
   rateLimiter(3, 3600), // 3 shares per hour
   validateBody(shareSchema),
-  async (req: AuthRequest, res: Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { certType } = req.body
       const identityKey = req.auth.identityKey
