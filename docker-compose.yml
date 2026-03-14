@@ -46,6 +46,7 @@ services:
       HTTP_PORT: 8080
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       X_REDIRECT_URI: ${X_REDIRECT_URI:-http://localhost:8080/api/verify/x/callback}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:8080/api/verify/google/callback}
     ports:
       - "8080:8080"
     depends_on:
