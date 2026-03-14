@@ -26,7 +26,7 @@ export function CertificateCard({ certificate, onDelete, onTogglePublic }: Certi
   const [isDeleting, setIsDeleting] = useState(false)
   const [isTogglingPublic, setIsTogglingPublic] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const Icon = typeIcons[certificate.type] || Mail
+  const Icon = typeIcons[certificate.type] || Phone
 
   const handleDelete = async () => {
     setIsDeleting(true)
