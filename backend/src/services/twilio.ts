@@ -7,6 +7,8 @@ const serviceSid = config.TWILIO_SERVICE_SID
 
 /**
  * Retry wrapper with exponential backoff.
+ * Does NOT retry 400-level errors (invalid parameters, missing config)
+ * since those are deterministic and will never succeed on retry.
  */
 async function withRetry<T>(
   fn: () => Promise<T>,
@@ -17,6 +19,10 @@ async function withRetry<T>(
     try {
       return await fn()
     } catch (err: any) {
+      // Don't retry client errors (4xx) — they are deterministic failures
+      if (err.status && err.status >= 400 && err.status < 500) {
+        throw err
+      }
       if (attempt === maxAttempts) throw err
       const delay = baseDelay * Math.pow(2, attempt - 1)
       logger.warn(
@@ -31,16 +37,33 @@ async function withRetry<T>(
 
 /**
  * Send a verification code to an email address via Twilio Verify.
+ *
+ * Requires a SendGrid email integration configured on the Verify service.
+ * @see https://www.twilio.com/docs/verify/email
  */
 export async function sendEmailVerification(email: string): Promise<{ sent: boolean; to: string }> {
-  const verification = await withRetry(() =>
-    client.verify.v2.services(serviceSid).verifications.create({
-      to: email,
-      channel: 'email',
-    })
-  )
-  logger.info({ to: email, status: verification.status }, 'Email verification sent')
-  return { sent: verification.status === 'pending', to: email }
+  try {
+    const verification = await withRetry(() =>
+      client.verify.v2.services(serviceSid).verifications.create({
+        to: email,
+        channel: 'email',
+      })
+    )
+    logger.info({ to: email, status: verification.status }, 'Email verification sent')
+    return { sent: verification.status === 'pending', to: email }
+  } catch (err: any) {
+    // Provide actionable guidance for common Twilio Verify email errors
+    if (err.code === 60200) {
+      logger.error(
+        { code: err.code, message: err.message, serviceSid },
+        'Twilio Verify "Invalid parameter" error. ' +
+          'This usually means the Verify service does not have a SendGrid email integration configured. ' +
+          'Set up an email integration at https://www.twilio.com/console/verify/email ' +
+          'and link it to your Verify service.'
+      )
+    }
+    throw err
+  }
 }
 
 /**

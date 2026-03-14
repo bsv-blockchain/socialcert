@@ -1,6 +1,7 @@
 import { Shell } from '@/components/layout/Shell'
 import { VerificationCard } from '@/components/VerificationCard'
-import { Mail, Phone, Twitter, Shield, ArrowRight } from 'lucide-react'
+import { Mail, Phone, ArrowRight } from 'lucide-react'
+import { XLogo } from '@/components/icons/XLogo'
 import { motion } from 'framer-motion'
 
 export default function Home() {
@@ -14,16 +15,40 @@ export default function Home() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 rounded-full bg-accent-light px-4 py-1.5 text-sm font-medium text-primary mb-6">
-            <Shield className="h-3.5 w-3.5" />
-            Blockchain-verified identity
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-bold text-text-primary tracking-tight mb-4">
-            Verify your identity<br />on the blockchain
+          <h1 className="text-4xl sm:text-5xl font-bold text-text-primary tracking-tight mb-8">
+            Choose how people<br />see you
           </h1>
+
+          {/* Before / After visual */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-8 max-w-2xl mx-auto">
+            {/* Before */}
+            <div className="flex-1 w-full rounded-xl border border-border bg-surface px-4 py-4">
+              <p className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-2">Without Who I Am</p>
+              <p className="font-mono text-xs text-text-secondary break-all leading-relaxed">
+                02da1df0360bead34cb0e06ca3d18a9c7b9cf066c1b48b6ad867e485832438d703
+              </p>
+            </div>
+
+            <ArrowRight className="h-5 w-5 text-primary shrink-0 hidden sm:block" />
+            <span className="text-primary font-medium text-sm sm:hidden">becomes</span>
+
+            {/* After */}
+            <div className="flex-1 w-full rounded-xl border-2 border-primary bg-white px-4 py-4 shadow-sm">
+              <p className="text-[10px] font-medium text-primary uppercase tracking-wider mb-2">With Who I Am</p>
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl" role="img" aria-label="person raising hand">&#x1F64B;&#x1F3FC;&#x200D;&#x2642;&#xFE0F;</span>
+                  <span className="text-lg font-semibold text-text-primary">deggen</span>
+                </div>
+                <p className="text-[11px] text-text-secondary">X account verified by Who I Am</p>
+              </div>
+            </div>
+          </div>
+
           <p className="text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed">
-            Link your email, phone number, or X account to your blockchain identity
-            with cryptographic proof. Simple, private, and verifiable.
+            Control how others see you across every app in the BSV ecosystem.
+            Publish verified attributes — email, phone, or X handle — so people
+            you interact with see a name, not a key.
           </p>
         </motion.div>
 
@@ -49,8 +74,8 @@ export default function Home() {
             accentColor="bg-emerald-50 text-emerald-600"
           />
           <VerificationCard
-            icon={Twitter}
-            title="X / Twitter"
+            icon={XLogo}
+            title="X"
             description="Connect your X account to your identity"
             href="/verify/x"
             accentColor="bg-zinc-100 text-zinc-800"

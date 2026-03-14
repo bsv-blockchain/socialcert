@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Shell } from '@/components/layout/Shell'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Twitter, Loader2, ArrowLeft } from 'lucide-react'
+import { Loader2, ArrowLeft } from 'lucide-react'
+import { XLogo } from '@/components/icons/XLogo'
 import { toast } from 'sonner'
 import { getAuthFetch } from '@/lib/wallet'
 import { getApiBaseUrl } from '@/lib/constants'
@@ -47,11 +48,11 @@ export default function XVerification() {
           <Card>
             <CardContent className="p-8 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-zinc-100 text-zinc-800 mx-auto mb-6">
-                <Twitter className="h-7 w-7" />
+                <XLogo className="h-7 w-7" />
               </div>
               <h2 className="text-xl font-semibold text-text-primary mb-2">Verify your X account</h2>
               <p className="text-sm text-text-secondary mb-8">
-                Connect your X (Twitter) account to your blockchain identity. You'll be redirected to X to authorize.
+                Connect your X account to your blockchain identity. You'll be redirected to X to authorize.
               </p>
 
               <div className="space-y-4">
@@ -75,7 +76,7 @@ export default function XVerification() {
                     </>
                   ) : (
                     <>
-                      <Twitter className="h-4 w-4" />
+                      <XLogo className="h-4 w-4" />
                       Connect with X
                     </>
                   )}

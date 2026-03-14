@@ -14,7 +14,7 @@ export async function connectToMongoDB(): Promise<Db> {
 
   client = new MongoClient(config.MONGO_URI)
   await client.connect()
-  db = client.db('socialcert')
+  db = client.db('whoiam')
 
   // Create indexes
   const verifications = db.collection('verifications')

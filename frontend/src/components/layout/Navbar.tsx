@@ -21,7 +21,7 @@ export function Navbar() {
             <Shield className="h-4.5 w-4.5" />
           </div>
           <span className="text-lg font-semibold text-text-primary tracking-tight">
-            SocialCert
+            Who I Am
           </span>
         </Link>
 

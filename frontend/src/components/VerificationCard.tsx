@@ -1,11 +1,11 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { type LucideIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { type ComponentType, type SVGProps } from 'react'
 
 interface VerificationCardProps {
-  icon: LucideIcon
+  icon: ComponentType<SVGProps<SVGSVGElement> & { className?: string }>
   title: string
   description: string
   href: string

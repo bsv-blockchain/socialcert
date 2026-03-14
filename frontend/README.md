@@ -1,5 +1,5 @@
-# SocialCert
-Babbage Certified Identity
+# Who I Am
+Identity resolution on the blockchain
 
 ## Development Instructions
 

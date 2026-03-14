@@ -1,7 +1,7 @@
 apiVersion: 1
 
 providers:
-  - name: "SocialCert"
+  - name: "Who I Am"
     orgId: 1
     folder: ""
     type: file

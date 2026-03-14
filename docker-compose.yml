@@ -4,9 +4,9 @@ services:
     image: mongo:7
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-socialcert}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-socialcert_dev}
-      MONGO_INITDB_DATABASE: socialcert
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-whoiam}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-whoiam_dev}
+      MONGO_INITDB_DATABASE: whoiam
     volumes:
       - mongo-data:/data/db
     ports:
@@ -41,9 +41,11 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      MONGO_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME:-socialcert}:${MONGO_INITDB_ROOT_PASSWORD:-socialcert_dev}@mongo:27017/socialcert?authSource=admin
+      MONGO_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME:-whoiam}:${MONGO_INITDB_ROOT_PASSWORD:-whoiam_dev}@mongo:27017/whoiam?authSource=admin
       REDIS_URL: redis://redis:6379
       HTTP_PORT: 8080
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      X_REDIRECT_URI: ${X_REDIRECT_URI:-http://localhost:8080/api/verify/x/callback}
     ports:
       - "8080:8080"
     depends_on:
@@ -81,9 +83,9 @@ services:
     profiles: [dev]
     restart: unless-stopped
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME:-socialcert}
-      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-socialcert_dev}
-      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME:-socialcert}:${MONGO_INITDB_ROOT_PASSWORD:-socialcert_dev}@mongo:27017/
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME:-whoiam}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-whoiam_dev}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME:-whoiam}:${MONGO_INITDB_ROOT_PASSWORD:-whoiam_dev}@mongo:27017/
       ME_CONFIG_BASICAUTH: "false"
     ports:
       - "8081:8081"

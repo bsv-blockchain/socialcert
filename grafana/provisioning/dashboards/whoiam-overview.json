@@ -87,11 +87,11 @@
     }
   ],
   "schemaVersion": 39,
-  "tags": ["socialcert"],
+  "tags": ["whoiam"],
   "templating": { "list": [] },
   "time": { "from": "now-1h", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
-  "title": "SocialCert Overview",
-  "uid": "socialcert-overview"
+  "title": "Who I Am Overview",
+  "uid": "whoiam-overview"
 }

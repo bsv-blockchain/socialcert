@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express'
 import client from 'prom-client'
 
 // Collect default Node.js metrics
-client.collectDefaultMetrics({ prefix: 'socialcert_' })
+client.collectDefaultMetrics({ prefix: 'whoiam_' })
 
 // Custom metrics
 export const httpRequestDuration = new client.Histogram({

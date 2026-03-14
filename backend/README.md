@@ -1,14 +1,14 @@
-# SocialCert Backend
+# Who I Am Backend
 
-SocialCert Key Registry Certificate Issuance Server
+Who I Am Key Registry Certificate Issuance Server
 
-A Stageline ("socialcert") deployment of the master branch of this repository is available at [https://staging-backend.socialcert.net](https://staging-backend.socialcert.net)
+A Stageline deployment of the master branch of this repository is available at [https://staging-backend.whoiam.lkup.net](https://staging-backend.whoiam.lkup.net)
 
-Having a SocialCert certificate allows you to register your MetaNet Identity with the key registry.
+Having a Who I Am certificate allows you to register your MetaNet Identity with the key registry.
 
-[UI for interacting with SocialCert](https://github.com/p2ppsr/socialcert-ui) as well.
+[UI for interacting with Who I Am](https://github.com/bsv-blockchain/socialcert) as well.
 
-## The SocialCert Certificate
+## The Who I Am Certificate
 
 ## License
 

@@ -17,9 +17,9 @@ export function WalletPrompt({ open, onClose }: WalletPromptProps) {
           </div>
           <DialogTitle className="text-center">BRC-100 Wallet Required</DialogTitle>
           <DialogDescription className="text-center">
-            SocialCert requires a BRC-100 compatible wallet to verify your identity
-            and manage certificates. Please install a compatible wallet extension
-            to continue.
+            Who I Am requires a BRC-100 compatible wallet to publish your verified
+            attributes and manage certificates. Please install a compatible wallet
+            extension to continue.
           </DialogDescription>
         </DialogHeader>
         <div className="flex justify-center pt-2">

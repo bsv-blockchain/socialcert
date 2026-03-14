@@ -23,7 +23,7 @@ const envSchema = z.object({
   // X / Twitter OAuth 2.0
   X_CLIENT_ID: z.string().min(1, 'X_CLIENT_ID is required'),
   X_CLIENT_SECRET: z.string().min(1, 'X_CLIENT_SECRET is required'),
-  X_REDIRECT_URI: z.string().url().default('http://localhost:3000/verify/x/callback'),
+  X_REDIRECT_URI: z.string().url().default('http://localhost:8080/api/verify/x/callback'),
 
   // Application
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),

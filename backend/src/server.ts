@@ -14,6 +14,8 @@ import {
   xVerificationRouter,
   signCertificateRouter,
 } from './routes'
+import { handleCallback } from './services/twitter'
+import { writeVerifiedAttributes } from './db/mongo'
 import { logger } from './utils/logger'
 
 let serverWallet: WalletInterface
@@ -44,7 +46,23 @@ export function createApp(wallet: WalletInterface) {
     }
     res.header('Access-Control-Allow-Headers', '*')
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-    res.header('Access-Control-Expose-Headers', 'X-Request-ID, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset')
+    res.header('Access-Control-Expose-Headers', [
+      'X-Request-ID',
+      'X-RateLimit-Limit',
+      'X-RateLimit-Remaining',
+      'X-RateLimit-Reset',
+      'x-bsv-auth-version',
+      'x-bsv-auth-message-type',
+      'x-bsv-auth-identity-key',
+      'x-bsv-auth-nonce',
+      'x-bsv-auth-your-nonce',
+      'x-bsv-auth-signature',
+      'x-bsv-auth-request-id',
+      'x-bsv-auth-requested-certificates',
+      'x-bsv-payment-version',
+      'x-bsv-payment-satoshis-required',
+      'x-bsv-payment-derivation-prefix',
+    ].join(', '))
     res.header('Access-Control-Allow-Private-Network', 'true')
 
     if (req.method === 'OPTIONS') {
@@ -75,12 +93,36 @@ export function createApp(wallet: WalletInterface) {
   app.use(metricsRouter)
   app.use(manifestRouter)
 
-  // X OAuth callback is a browser redirect, not an authenticated API call
-  // It's registered inside xVerificationRouter but handled before auth middleware
-  // by checking the route path
-  app.get('/api/verify/x/callback', (req: Request, res: Response, next: NextFunction) => {
-    // Skip auth for this route — it's handled by the xVerification router
-    next()
+  // X OAuth callback — browser redirect from X, no BSV auth.
+  // Must be registered before the auth middleware so it's fully handled here.
+  app.get('/api/verify/x/callback', async (req: Request, res: Response) => {
+    try {
+      const { code, state } = req.query as { code: string; state: string }
+
+      if (!code || !state) {
+        res.redirect(`${config.FRONTEND_URL}/verify/x?error=missing_params`)
+        return
+      }
+
+      const result = await handleCallback(code, state)
+
+      await writeVerifiedAttributes(result.identityKey, {
+        userName: result.userName,
+        profilePhoto: result.profilePhoto,
+      })
+
+      logger.info({ identityKey: result.identityKey, userName: result.userName }, 'X callback successful')
+
+      const params = new URLSearchParams({
+        success: 'true',
+        userName: result.userName,
+        profilePhoto: result.profilePhoto,
+      })
+      res.redirect(`${config.FRONTEND_URL}/verify/x/callback?${params.toString()}`)
+    } catch (err: any) {
+      logger.error({ err }, 'X OAuth callback failed')
+      res.redirect(`${config.FRONTEND_URL}/verify/x?error=auth_failed`)
+    }
   })
 
   // ─── BSV Auth middleware ───────────────────────────────────────────────

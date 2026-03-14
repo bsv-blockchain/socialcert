@@ -2,8 +2,7 @@ import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import { rateLimiter } from '../middleware/rateLimiter'
 import { validateBody } from '../middleware/validate'
-import { generateAuthUrl, handleCallback, shareCertification } from '../services/twitter'
-import { writeVerifiedAttributes } from '../db/mongo'
+import { generateAuthUrl, shareCertification } from '../services/twitter'
 import { config } from '../config'
 import { logger } from '../utils/logger'
 
@@ -34,40 +33,6 @@ router.post(
     }
   }
 )
-
-// ─── X OAuth 2.0 callback (not authenticated — called by browser redirect) ─
-
-router.get('/api/verify/x/callback', async (req: Request, res: Response) => {
-  try {
-    const { code, state } = req.query as { code: string; state: string }
-
-    if (!code || !state) {
-      res.redirect(`${config.FRONTEND_URL}/verify/x?error=missing_params`)
-      return
-    }
-
-    const result = await handleCallback(code, state)
-
-    // Store verified attributes
-    await writeVerifiedAttributes(result.identityKey, {
-      userName: result.userName,
-      profilePhoto: result.profilePhoto,
-    })
-
-    logger.info({ identityKey: result.identityKey, userName: result.userName }, 'X callback successful')
-
-    // Redirect back to frontend with success params
-    const params = new URLSearchParams({
-      success: 'true',
-      userName: result.userName,
-      profilePhoto: result.profilePhoto,
-    })
-    res.redirect(`${config.FRONTEND_URL}/verify/x/callback?${params.toString()}`)
-  } catch (err: any) {
-    logger.error({ err }, 'X OAuth callback failed')
-    res.redirect(`${config.FRONTEND_URL}/verify/x?error=auth_failed`)
-  }
-})
 
 // ─── Check X verification status ───────────────────────────────────────────
 

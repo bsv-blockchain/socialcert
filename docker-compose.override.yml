@@ -24,5 +24,7 @@ services:
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts:ro
     environment:
       NODE_ENV: development
+      VITE_API_TARGET: http://backend:8080

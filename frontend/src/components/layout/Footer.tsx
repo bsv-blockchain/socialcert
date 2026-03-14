@@ -3,7 +3,7 @@ export function Footer() {
     <footer className="border-t border-border bg-white">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
         <p className="text-xs text-text-secondary">
-          SocialCert v2.0 — Identity certification on the blockchain
+          Who I Am v2.0 — Identity resolution on the blockchain
         </p>
         <div className="flex items-center gap-4">
           <a

@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Shell } from '@/components/layout/Shell'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Twitter, Loader2, Share2 } from 'lucide-react'
+import { Loader2, Share2 } from 'lucide-react'
+import { XLogo } from '@/components/icons/XLogo'
 import { toast } from 'sonner'
 import { getWalletClient, getAuthFetch, getIdentityClient } from '@/lib/wallet'
 import { getCertifierConfig, getApiBaseUrl, CERTIFICATE_TYPES } from '@/lib/constants'
@@ -109,7 +110,7 @@ export default function XCallback() {
               {status === 'success' && (
                 <>
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 mx-auto mb-4">
-                    <Twitter className="h-8 w-8" />
+                    <XLogo className="h-8 w-8" />
                   </div>
                   <h2 className="text-xl font-semibold text-text-primary mb-2">X Account Verified!</h2>
                   <p className="text-sm text-text-secondary mb-6">
@@ -129,7 +130,7 @@ export default function XCallback() {
               {status === 'error' && (
                 <>
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-600 mx-auto mb-4">
-                    <Twitter className="h-8 w-8" />
+                    <XLogo className="h-8 w-8" />
                   </div>
                   <h2 className="text-xl font-semibold text-text-primary mb-2">Verification Failed</h2>
                   <p className="text-sm text-text-secondary mb-6">

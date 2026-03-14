@@ -6,6 +6,6 @@ export const logger = pino({
   ...(config.NODE_ENV === 'development'
     ? { transport: { target: 'pino-pretty', options: { colorize: true } } }
     : {}),
-  base: { service: 'socialcert-backend' },
+  base: { service: 'whoiam-backend' },
   timestamp: pino.stdTimeFunctions.isoTime,
 })
