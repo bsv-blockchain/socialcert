@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Shell } from '@/components/layout/Shell'
 import { Button } from '@/components/ui/button'
@@ -8,20 +8,17 @@ import { XLogo } from '@/components/icons/XLogo'
 import { toast } from 'sonner'
 import { getAuthFetch } from '@/lib/wallet'
 import { getApiBaseUrl } from '@/lib/constants'
-import { useVerificationStore } from '@/stores/verification'
 import { motion } from 'framer-motion'
 
 export default function XVerification() {
   const navigate = useNavigate()
-  const { shouldRevealPublicly, setShouldRevealPublicly } = useVerificationStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => { handleSignIn() }, [])
 
   const handleSignIn = async () => {
     setIsSubmitting(true)
     try {
-      // Save reveal preference before redirect
-      localStorage.setItem('shouldRevealPublicly', shouldRevealPublicly.toString())
-
       const authFetch = getAuthFetch()
       const res = await authFetch.fetch(`${getApiBaseUrl()}/api/verify/x/auth-url`, {
         method: 'POST',
@@ -48,40 +45,16 @@ export default function XVerification() {
           <Card>
             <CardContent className="p-8 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-zinc-100 text-zinc-800 mx-auto mb-6">
-                <XLogo className="h-7 w-7" />
+                {isSubmitting ? <Loader2 className="h-7 w-7 animate-spin" /> : <XLogo className="h-7 w-7" />}
               </div>
-              <h2 className="text-xl font-semibold text-text-primary mb-2">Verify your X account</h2>
-              <p className="text-sm text-text-secondary mb-8">
-                Connect your X account to your blockchain identity. You'll be redirected to X to authorize.
+              <h2 className="text-xl font-semibold text-text-primary mb-2">
+                {isSubmitting ? 'Redirecting to X...' : 'Verify your X account'}
+              </h2>
+              <p className="text-sm text-text-secondary">
+                {isSubmitting
+                  ? 'You\'ll be sent to X to authorize access.'
+                  : 'Connect your X account to your blockchain identity.'}
               </p>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-center">
-                  <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={shouldRevealPublicly}
-                      onChange={(e) => setShouldRevealPublicly(e.target.checked)}
-                      className="rounded border-border"
-                    />
-                    Publicly reveal certificate
-                  </label>
-                </div>
-
-                <Button onClick={handleSignIn} disabled={isSubmitting} className="w-full" size="lg">
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Redirecting to X...
-                    </>
-                  ) : (
-                    <>
-                      <XLogo className="h-4 w-4" />
-                      Connect with X
-                    </>
-                  )}
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </motion.div>

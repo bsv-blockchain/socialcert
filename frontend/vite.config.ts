@@ -25,6 +25,10 @@ export default defineConfig({
         target: process.env.VITE_API_TARGET ?? "http://localhost:8080",
         changeOrigin: true,
       },
+      "/manifest.json": {
+        target: process.env.VITE_API_TARGET ?? "http://localhost:8080",
+        changeOrigin: true,
+      },
     },
     allowedHosts: ["deggen.ngrok.app"],
   },
