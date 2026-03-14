@@ -1,28 +1,28 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Shell } from '@/components/layout/Shell'
 import { ProgressStepper } from '@/components/ProgressStepper'
 import { CodeInput } from '@/components/CodeInput'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Phone, Loader2, ArrowLeft, RefreshCw } from 'lucide-react'
+import { Phone, Loader2, ArrowLeft, RefreshCw, Globe, Lock } from 'lucide-react'
 import { toast } from 'sonner'
 import { getWalletClient, getAuthFetch, getIdentityClient } from '@/lib/wallet'
 import { getCertifierConfig, getApiBaseUrl, CERTIFICATE_TYPES } from '@/lib/constants'
-import { useVerificationStore } from '@/stores/verification'
 import { motion, AnimatePresence } from 'framer-motion'
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 
-const steps = [{ label: 'Enter Phone' }, { label: 'Verify Code' }, { label: 'Certificate Issued' }]
+const steps = [{ label: 'Enter Phone' }, { label: 'Verify Code' }, { label: 'Visibility' }, { label: 'Done' }]
 
 export default function PhoneVerification() {
   const navigate = useNavigate()
-  const { shouldRevealPublicly, setShouldRevealPublicly } = useVerificationStore()
   const [step, setStep] = useState(0)
   const [phoneNumber, setPhoneNumber] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isRevealing, setIsRevealing] = useState(false)
   const [remainingAttempts, setRemainingAttempts] = useState(5)
+  const certRef = useRef<any>(null)
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -76,15 +76,7 @@ export default function PhoneVerification() {
           acquisitionProtocol: 'issuance',
           fields: { phoneNumber },
         })
-
-        if (shouldRevealPublicly) {
-          try {
-            await getIdentityClient().publiclyRevealAttributes(newCert, ['phoneNumber'])
-          } catch {
-            toast.warning('Certificate issued but public revelation failed')
-          }
-        }
-
+        certRef.current = newCert
         setStep(2)
       } else {
         const remaining = data.data?.remainingAttempts ?? remainingAttempts - 1
@@ -96,6 +88,21 @@ export default function PhoneVerification() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleReveal = async (reveal: boolean) => {
+    if (reveal && certRef.current) {
+      setIsRevealing(true)
+      try {
+        await getIdentityClient().publiclyRevealAttributes(certRef.current, ['phoneNumber'])
+        toast.success('Your phone number is now publicly discoverable')
+      } catch {
+        toast.warning('Certificate issued but public revelation failed')
+      } finally {
+        setIsRevealing(false)
+      }
+    }
+    setStep(3)
   }
 
   const handleResend = async () => {
@@ -135,17 +142,6 @@ export default function PhoneVerification() {
                       onChange={(value) => setPhoneNumber(value || '')}
                       className="flex h-10 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm"
                     />
-                    <div className="flex items-center justify-between">
-                      <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={shouldRevealPublicly}
-                          onChange={(e) => setShouldRevealPublicly(e.target.checked)}
-                          className="rounded border-border"
-                        />
-                        Publicly reveal certificate
-                      </label>
-                    </div>
                     <Button type="submit" className="w-full" disabled={isSubmitting || !phoneNumber}>
                       {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                       Send verification code
@@ -188,8 +184,51 @@ export default function PhoneVerification() {
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 mx-auto mb-4">
                     <Phone className="h-8 w-8" />
                   </div>
+                  <h2 className="text-xl font-semibold text-text-primary mb-2">
+                    {phoneNumber} verified
+                  </h2>
+                  <p className="text-sm text-text-secondary mb-6">
+                    Your certificate is in your wallet. Do you want others to be able to find you by your phone number?
+                  </p>
+
+                  <div className="space-y-3 mb-6 text-left">
+                    <div className="rounded-lg border border-border bg-surface p-4">
+                      <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-1">If public</p>
+                      <p className="text-sm text-text-primary">
+                        Anyone who knows <span className="font-medium">{phoneNumber}</span> can look up your identityKey. Apps show your number instead of your key.
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-border bg-surface p-4">
+                      <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-1">If private</p>
+                      <p className="text-sm text-text-primary">
+                        Your phone number is not searchable. Only people you share your certificate with directly can verify the link.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button variant="outline" className="flex-1" onClick={() => handleReveal(false)} disabled={isRevealing}>
+                      <Lock className="h-4 w-4" /> Keep private
+                    </Button>
+                    <Button className="flex-1" onClick={() => handleReveal(true)} disabled={isRevealing}>
+                      {isRevealing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+                      Make public
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {step === 3 && (
+            <motion.div key="step3" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 mx-auto mb-4">
+                    <Phone className="h-8 w-8" />
+                  </div>
                   <h2 className="text-xl font-semibold text-text-primary mb-2">Phone Verified!</h2>
-                  <p className="text-sm text-text-secondary mb-6">Your phone certificate has been issued.</p>
+                  <p className="text-sm text-text-secondary mb-6">Your phone certificate has been issued and stored in your wallet.</p>
                   <div className="flex gap-3 justify-center">
                     <Button onClick={() => navigate('/certificates')}>View Certificates</Button>
                     <Button variant="outline" onClick={() => navigate('/')}>Verify Another</Button>
