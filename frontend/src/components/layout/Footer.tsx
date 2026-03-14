@@ -1,7 +1,7 @@
 export function Footer() {
   return (
     <footer className="border-t border-border bg-white">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 sm:px-6 py-4">
         <p className="text-xs text-text-secondary">
           Who I Am v2.0 — Identity resolution on the blockchain
         </p>

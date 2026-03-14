@@ -40,10 +40,10 @@ export default function XVerification() {
 
   return (
     <Shell>
-      <div className="mx-auto max-w-lg px-6 py-12">
+      <div className="mx-auto max-w-lg px-4 sm:px-6 py-8 sm:py-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <Card>
-            <CardContent className="p-8 text-center">
+            <CardContent className="p-5 sm:p-8 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-zinc-100 text-zinc-800 mx-auto mb-6">
                 {isSubmitting ? <Loader2 className="h-7 w-7 animate-spin" /> : <XLogo className="h-7 w-7" />}
               </div>

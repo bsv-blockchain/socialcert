@@ -26,7 +26,7 @@ export function VerificationCard({
       className="group relative overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
       onClick={() => navigate(href)}
     >
-      <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
+      <CardContent className="flex flex-col items-center gap-4 p-5 sm:p-8 text-center">
         <div
           className={cn(
             "flex h-14 w-14 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110",

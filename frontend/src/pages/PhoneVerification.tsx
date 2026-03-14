@@ -121,14 +121,14 @@ export default function PhoneVerification() {
 
   return (
     <Shell>
-      <div className="mx-auto max-w-lg px-6 py-12">
+      <div className="mx-auto max-w-lg px-4 sm:px-6 py-8 sm:py-12">
         <ProgressStepper steps={steps} currentStep={step} />
 
         <AnimatePresence mode="wait">
           {step === 0 && (
             <motion.div key="step0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
               <Card>
-                <CardContent className="p-8">
+                <CardContent className="p-5 sm:p-8">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 mb-6">
                     <Phone className="h-6 w-6" />
                   </div>
@@ -155,7 +155,7 @@ export default function PhoneVerification() {
           {step === 1 && (
             <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
               <Card>
-                <CardContent className="p-8 text-center">
+                <CardContent className="p-5 sm:p-8 text-center">
                   <h2 className="text-xl font-semibold text-text-primary mb-2">Check your phone</h2>
                   <p className="text-sm text-text-secondary mb-8">
                     Enter the 6-digit code sent to <span className="font-medium text-text-primary">{phoneNumber}</span>
@@ -180,7 +180,7 @@ export default function PhoneVerification() {
           {step === 2 && (
             <motion.div key="step2" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
               <Card>
-                <CardContent className="p-8 text-center">
+                <CardContent className="p-5 sm:p-8 text-center">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 mx-auto mb-4">
                     <Phone className="h-8 w-8" />
                   </div>
@@ -223,13 +223,13 @@ export default function PhoneVerification() {
           {step === 3 && (
             <motion.div key="step3" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
               <Card>
-                <CardContent className="p-8 text-center">
+                <CardContent className="p-5 sm:p-8 text-center">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 mx-auto mb-4">
                     <Phone className="h-8 w-8" />
                   </div>
                   <h2 className="text-xl font-semibold text-text-primary mb-2">Phone Verified!</h2>
                   <p className="text-sm text-text-secondary mb-6">Your phone certificate has been issued and stored in your wallet.</p>
-                  <div className="flex gap-3 justify-center">
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Button onClick={() => navigate('/certificates')}>View Certificates</Button>
                     <Button variant="outline" onClick={() => navigate('/')}>Verify Another</Button>
                   </div>

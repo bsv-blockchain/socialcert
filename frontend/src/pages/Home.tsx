@@ -1,6 +1,6 @@
 import { Shell } from "@/components/layout/Shell";
 import { VerificationCard } from "@/components/VerificationCard";
-import { Phone, ArrowRight } from "lucide-react";
+import { Phone, ArrowRight, ArrowDown } from "lucide-react";
 import { XLogo } from "@/components/icons/XLogo";
 import { GoogleLogo } from "@/components/icons/GoogleLogo";
 import { motion } from "framer-motion";
@@ -8,15 +8,15 @@ import { motion } from "framer-motion";
 export default function Home() {
   return (
     <Shell>
-      <div className="mx-auto max-w-5xl px-6 py-16">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10 sm:py-16">
         {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className="text-center mb-10 sm:mb-16"
         >
-          <h1 className="text-4xl sm:text-5xl font-bold text-text-primary tracking-tight mb-8">
+          <h1 className="text-3xl sm:text-5xl font-bold text-text-primary tracking-tight mb-6 sm:mb-8">
             Choose how people
             <br />
             see you
@@ -35,9 +35,7 @@ export default function Home() {
             </div>
 
             <ArrowRight className="h-5 w-5 text-primary shrink-0 hidden sm:block" />
-            <span className="text-primary font-medium text-sm sm:hidden">
-              becomes
-            </span>
+            <ArrowDown className="h-5 w-5 text-primary shrink-0 sm:hidden" />
 
             {/* After */}
             <div className="flex-1 w-full rounded-xl border-2 border-primary bg-white px-4 py-4 shadow-sm">
@@ -70,7 +68,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="grid gap-6 sm:grid-cols-3 max-w-3xl mx-auto"
+          className="grid gap-4 sm:gap-6 sm:grid-cols-3 max-w-3xl mx-auto"
         >
           <VerificationCard
             icon={XLogo}
@@ -82,7 +80,7 @@ export default function Home() {
           <VerificationCard
             icon={GoogleLogo}
             title="Google"
-            description="Verify your Google account"
+            description="Verify your account"
             href="/verify/google"
             accentColor="bg-white border border-border"
           />
@@ -100,7 +98,7 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-20"
+          className="mt-14 sm:mt-20"
         >
           <h2 className="text-xl font-semibold text-text-primary mb-10 text-center">
             You're always in control.
@@ -145,7 +143,6 @@ export default function Home() {
               </div>
             ))}
           </div>
-
         </motion.div>
       </div>
     </Shell>

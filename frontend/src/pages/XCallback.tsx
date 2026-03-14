@@ -113,13 +113,13 @@ export default function XCallback() {
 
   return (
     <Shell>
-      <div className="mx-auto max-w-lg px-6 py-12">
+      <div className="mx-auto max-w-lg px-4 sm:px-6 py-8 sm:py-12">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
         >
           <Card>
-            <CardContent className="p-8 text-center">
+            <CardContent className="p-5 sm:p-8 text-center">
               {status === "loading" && (
                 <div className="py-8">
                   <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
@@ -203,7 +203,7 @@ export default function XCallback() {
                     You now have a certificate proving that you own the @
                     {userName} account on X.
                   </p>
-                  <div className="flex gap-3 justify-center flex-wrap">
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Button
                       onClick={handleShare}
                       disabled={isSharing}
