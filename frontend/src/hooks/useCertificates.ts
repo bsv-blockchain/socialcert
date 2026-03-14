@@ -2,6 +2,18 @@ import { useState, useCallback } from 'react'
 import { getWalletClient, getIdentityClient } from '@/lib/wallet'
 import { getCertifierConfig, CERTIFICATE_TYPES, CERT_TYPE_LABELS } from '@/lib/constants'
 import { toast } from 'sonner'
+import { VerifiableCertificate } from '@bsv/sdk'
+import LookupResolver from '@bsv/sdk/overlay-tools/LookupResolver'
+
+async function isPubliclyRevealed(serialNumber: string, network: 'mainnet' | 'testnet'): Promise<boolean> {
+  try {
+    const resolver = new LookupResolver({ networkPreset: network })
+    const answer = await resolver.query({ service: 'ls_identity', query: { serialNumber } })
+    return answer.type === 'output-list' && answer.outputs.length > 0
+  } catch {
+    return false
+  }
+}
 
 export interface CertificateInfo {
   type: string
@@ -10,6 +22,7 @@ export interface CertificateInfo {
   fields: Record<string, string>
   displayValue: string
   certifier: string
+  isPublic: boolean
   raw: any
 }
 
@@ -26,6 +39,9 @@ export function useCertificates() {
       const certTypes = Object.values(CERTIFICATE_TYPES)
       const allCerts: CertificateInfo[] = []
 
+      const { publicKey: myIdentityKey } = await wallet.getPublicKey({ identityKey: true })
+      const { network } = await wallet.getNetwork({})
+
       for (const certType of certTypes) {
         try {
           const result = await wallet.listCertificates({
@@ -34,11 +50,29 @@ export function useCertificates() {
           })
           for (const cert of result.certificates) {
             const typeLabel = CERT_TYPE_LABELS[cert.type] || 'Unknown'
-            const fields = cert.fields || {}
+            const fieldNames = Object.keys(cert.fields || [])
+
+            // Decrypt fields by proving to ourselves
+            let fields: Record<string, string> = {}
+            try {
+              const { keyringForVerifier } = await wallet.proveCertificate({
+                certificate: cert,
+                fieldsToReveal: fieldNames,
+                verifier: myIdentityKey,
+              })
+              const vc = VerifiableCertificate.fromCertificate(cert, keyringForVerifier)
+              fields = await vc.decryptFields(wallet as any)
+            } catch {
+              fields = cert.fields || {}
+            }
+
             let displayValue = ''
             if (fields.email) displayValue = fields.email
             else if (fields.phoneNumber) displayValue = fields.phoneNumber
             else if (fields.userName) displayValue = `@${fields.userName}`
+
+            // Check the identity overlay for a live UTXO — if one exists, the cert is public
+            const isPublic = await isPubliclyRevealed(cert.serialNumber, network as 'mainnet' | 'testnet')
 
             allCerts.push({
               type: cert.type,
@@ -47,6 +81,7 @@ export function useCertificates() {
               fields,
               displayValue,
               certifier: cert.certifier,
+              isPublic,
               raw: cert,
             })
           }
@@ -64,32 +99,35 @@ export function useCertificates() {
     }
   }, [])
 
-  const unlinkCertificate = useCallback(async (cert: CertificateInfo) => {
-    try {
+  const deleteCertificate = useCallback(async (cert: CertificateInfo) => {
+    const wallet = getWalletClient()
+
+    if (cert.isPublic) {
       const identityClient = getIdentityClient()
-      const wallet = getWalletClient()
-
-      // Step 1: Revoke the public revelation from the overlay
-      toast.info('Revoking public revelation...')
       await identityClient.revokeCertificateRevelation(cert.serialNumber)
-
-      // Step 2: Relinquish the certificate from the wallet
-      toast.info('Removing certificate from wallet...')
-      await wallet.relinquishCertificate({
-        type: cert.type,
-        serialNumber: cert.serialNumber,
-        certifier: cert.certifier,
-      })
-
-      toast.success('Certificate unlinked successfully')
-
-      // Refresh the list
-      await loadCertificates()
-    } catch (err: any) {
-      console.error('Failed to unlink certificate:', err)
-      toast.error(err.message || 'Failed to unlink certificate')
     }
+
+    await wallet.relinquishCertificate({
+      type: cert.type,
+      serialNumber: cert.serialNumber,
+      certifier: cert.certifier,
+    })
+
+    await loadCertificates()
   }, [loadCertificates])
 
-  return { certificates, isLoading, loadCertificates, unlinkCertificate }
+  const togglePublic = useCallback(async (cert: CertificateInfo) => {
+    const identityClient = getIdentityClient()
+
+    if (cert.isPublic) {
+      await identityClient.revokeCertificateRevelation(cert.serialNumber)
+    } else {
+      const fieldNames = Object.keys(cert.fields)
+      await identityClient.publiclyRevealAttributes(cert.raw, fieldNames)
+    }
+
+    await loadCertificates()
+  }, [loadCertificates])
+
+  return { certificates, isLoading, loadCertificates, deleteCertificate, togglePublic }
 }

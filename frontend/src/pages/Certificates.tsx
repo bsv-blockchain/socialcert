@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 
 export default function Certificates() {
   const navigate = useNavigate()
-  const { certificates, isLoading, loadCertificates, unlinkCertificate } = useCertificates()
+  const { certificates, isLoading, loadCertificates, deleteCertificate, togglePublic } = useCertificates()
 
   useEffect(() => {
     loadCertificates()
@@ -53,7 +53,7 @@ export default function Certificates() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  <CertificateCard certificate={cert} onUnlink={unlinkCertificate} />
+                  <CertificateCard certificate={cert} onDelete={deleteCertificate} onTogglePublic={togglePublic} />
                 </motion.div>
               ))}
             </div>

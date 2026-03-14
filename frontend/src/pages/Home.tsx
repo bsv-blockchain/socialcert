@@ -53,7 +53,7 @@ export default function Home() {
                     &#x1F64B;&#x1F3FC;&#x200D;&#x2642;&#xFE0F;
                   </span>
                   <span className="text-lg font-semibold text-text-primary">
-                    deggen
+                    @satoshi
                   </span>
                 </div>
                 <p className="text-[11px] text-text-secondary">

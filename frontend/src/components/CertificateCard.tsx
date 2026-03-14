@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { type ComponentType, type SVGProps } from 'react'
-import { Mail, Phone, Unlink, Loader2 } from 'lucide-react'
+import { Mail, Phone, Trash2, Loader2, Globe, Lock } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
 import { type CertificateInfo } from '@/hooks/useCertificates'
 import { CERTIFICATE_TYPES } from '@/lib/constants'
@@ -17,69 +17,119 @@ const typeIcons: Record<string, ComponentType<SVGProps<SVGSVGElement> & { classN
 
 interface CertificateCardProps {
   certificate: CertificateInfo
-  onUnlink: (cert: CertificateInfo) => Promise<void>
+  onDelete: (cert: CertificateInfo) => Promise<void>
+  onTogglePublic: (cert: CertificateInfo) => Promise<void>
 }
 
-export function CertificateCard({ certificate, onUnlink }: CertificateCardProps) {
-  const [isUnlinking, setIsUnlinking] = useState(false)
-  const [showConfirm, setShowConfirm] = useState(false)
+export function CertificateCard({ certificate, onDelete, onTogglePublic }: CertificateCardProps) {
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isTogglingPublic, setIsTogglingPublic] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const Icon = typeIcons[certificate.type] || Mail
 
-  const handleUnlink = async () => {
-    setIsUnlinking(true)
-    setShowConfirm(false)
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    setShowDeleteConfirm(false)
     try {
-      await onUnlink(certificate)
+      await onDelete(certificate)
     } finally {
-      setIsUnlinking(false)
+      setIsDeleting(false)
+    }
+  }
+
+  const handleTogglePublic = async () => {
+    setIsTogglingPublic(true)
+    try {
+      await onTogglePublic(certificate)
+    } finally {
+      setIsTogglingPublic(false)
     }
   }
 
   return (
     <>
       <Card>
-        <CardContent className="flex items-center justify-between p-5">
+        <CardContent className="p-5">
+          {/* Top row: avatar/icon + details */}
           <div className="flex items-center gap-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Icon className="h-5 w-5" />
-            </div>
+            {certificate.fields.profilePhoto ? (
+              <img
+                src={certificate.fields.profilePhoto}
+                alt={certificate.displayValue}
+                className="h-11 w-11 rounded-full object-cover shrink-0"
+              />
+            ) : (
+              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+                <Icon className="h-5 w-5" />
+              </div>
+            )}
             <div>
               <div className="flex items-center gap-2">
                 <p className="font-medium text-text-primary">{certificate.typeLabel} Certificate</p>
-                <Badge variant="success">Linked</Badge>
+                {certificate.isPublic ? (
+                  <Badge variant="success" className="flex items-center gap-1">
+                    <Globe className="h-3 w-3" /> Public
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Lock className="h-3 w-3" /> Private
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-text-secondary mt-0.5">{certificate.displayValue}</p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowConfirm(true)}
-            disabled={isUnlinking}
-            className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-          >
-            {isUnlinking ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Unlink className="h-3.5 w-3.5" />
-            )}
-            Unlink
-          </Button>
+
+          {/* Bottom row: actions */}
+          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleTogglePublic}
+              disabled={isTogglingPublic || isDeleting}
+              className="flex-1"
+            >
+              {isTogglingPublic ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : certificate.isPublic ? (
+                <Lock className="h-3.5 w-3.5" />
+              ) : (
+                <Globe className="h-3.5 w-3.5" />
+              )}
+              {certificate.isPublic ? 'Make Private' : 'Make Public'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={isDeleting || isTogglingPublic}
+              className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+            >
+              {isDeleting ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="h-3.5 w-3.5" />
+              )}
+              Delete
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
-      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Unlink Certificate</DialogTitle>
+            <DialogTitle>Delete Certificate</DialogTitle>
             <DialogDescription>
-              This will remove your publicly revealed {certificate.typeLabel.toLowerCase()} identity
-              and delete the certificate from your wallet. This action cannot be undone.
+              {certificate.isPublic
+                ? `Your public ${certificate.typeLabel.toLowerCase()} attestation will be revoked and the certificate deleted from your wallet.`
+                : `This certificate will be deleted from your wallet.`}{' '}
+              This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfirm(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleUnlink}>Unlink Certificate</Button>
+            <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDelete}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
