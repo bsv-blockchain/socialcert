@@ -1,7 +1,8 @@
 import { Shell } from "@/components/layout/Shell";
 import { VerificationCard } from "@/components/VerificationCard";
-import { Mail, Phone, ArrowRight } from "lucide-react";
+import { Phone, ArrowRight } from "lucide-react";
 import { XLogo } from "@/components/icons/XLogo";
+import { GoogleLogo } from "@/components/icons/GoogleLogo";
 import { motion } from "framer-motion";
 
 export default function Home() {
@@ -62,12 +63,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          <p className="text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed">
-            Control how others see you across every app in the BSV ecosystem.
-            Publish verified attributes — email, phone, or X handle — so people
-            you interact with see a name, not a key.
-          </p>
         </motion.div>
 
         {/* Verification cards */}
@@ -85,11 +80,11 @@ export default function Home() {
             accentColor="bg-zinc-100 text-zinc-800"
           />
           <VerificationCard
-            icon={Mail}
-            title="Email"
-            description="Verify your email address"
-            href="/verify/email"
-            accentColor="bg-blue-50 text-blue-600"
+            icon={GoogleLogo}
+            title="Google"
+            description="Verify your Google account"
+            href="/verify/google"
+            accentColor="bg-white border border-border"
           />
           <VerificationCard
             icon={Phone}
@@ -105,33 +100,52 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-20 text-center"
+          className="mt-20"
         >
-          <h2 className="text-xl font-semibold text-text-primary mb-8">
-            How it works
+          <h2 className="text-xl font-semibold text-text-primary mb-10 text-center">
+            You're always in control.
           </h2>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-sm text-text-secondary">
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white text-xs font-semibold">
-                1
-              </span>
-              Choose a verification method
-            </div>
-            <ArrowRight className="h-4 w-4 text-border hidden sm:block" />
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white text-xs font-semibold">
-                2
-              </span>
-              Complete verification
-            </div>
-            <ArrowRight className="h-4 w-4 text-border hidden sm:block" />
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white text-xs font-semibold">
-                3
-              </span>
-              Certificate is issued to your wallet
-            </div>
+
+          {/* Steps */}
+          <div className="flex flex-col sm:flex-row items-start justify-center gap-6 sm:gap-4 mb-12">
+            {[
+              {
+                n: 1,
+                title: "Verify Once",
+                body: "We confirm access, and issue certificates.",
+              },
+              {
+                n: 2,
+                title: "Keep Your Data",
+                body: "You hold the certificates we issue — not us.",
+              },
+              {
+                n: 3,
+                title: "Your Decision",
+                body: "Publish, or grant access to apps on request.",
+              },
+            ].map(({ n, title, body }, i, arr) => (
+              <div
+                key={n}
+                className="flex sm:flex-col items-start sm:items-center gap-4 flex-1 max-w-xs"
+              >
+                <div className="flex items-center gap-3 sm:flex-col sm:gap-2">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-white text-xs font-semibold">
+                    {n}
+                  </span>
+                </div>
+                <div className="sm:text-center">
+                  <p className="text-sm font-medium text-text-primary mb-0.5">
+                    {title}
+                  </p>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    {body}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
+
         </motion.div>
       </div>
     </Shell>

@@ -2,15 +2,16 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { type ComponentType, type SVGProps } from 'react'
-import { Mail, Phone, Trash2, Loader2, Globe, Lock } from 'lucide-react'
+import { Phone, Trash2, Loader2, Globe, Lock } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
+import { GoogleLogo } from '@/components/icons/GoogleLogo'
 import { type CertificateInfo } from '@/hooks/useCertificates'
 import { CERTIFICATE_TYPES } from '@/lib/constants'
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 
 const typeIcons: Record<string, ComponentType<SVGProps<SVGSVGElement> & { className?: string }>> = {
-  [CERTIFICATE_TYPES.email]: Mail,
+  [CERTIFICATE_TYPES.google]: GoogleLogo,
   [CERTIFICATE_TYPES.phone]: Phone,
   [CERTIFICATE_TYPES.x]: XLogo,
 }

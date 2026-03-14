@@ -12,9 +12,11 @@ import {
   emailVerificationRouter,
   phoneVerificationRouter,
   xVerificationRouter,
+  googleVerificationRouter,
   signCertificateRouter,
 } from "./routes";
 import { handleCallback } from "./services/twitter";
+import { handleGoogleCallback } from "./services/google";
 import { writeVerifiedAttributes } from "./db/mongo";
 import { logger } from "./utils/logger";
 
@@ -136,6 +138,44 @@ export function createApp(wallet: WalletInterface) {
     }
   });
 
+  // Google OAuth callback — browser redirect from Google, no BSV auth.
+  app.get("/api/verify/google/callback", async (req: Request, res: Response) => {
+    try {
+      const { code, state } = req.query as { code: string; state: string };
+
+      if (!code || !state) {
+        res.redirect(`${config.FRONTEND_URL}/verify/google?error=missing_params`);
+        return;
+      }
+
+      const result = await handleGoogleCallback(code, state);
+
+      await writeVerifiedAttributes(result.identityKey, {
+        email: result.email,
+        name: result.name,
+        profilePhoto: result.profilePhoto,
+      });
+
+      logger.info(
+        { identityKey: result.identityKey, email: result.email },
+        "Google callback successful",
+      );
+
+      const params = new URLSearchParams({
+        success: "true",
+        email: result.email,
+        name: result.name,
+        profilePhoto: result.profilePhoto,
+      });
+      res.redirect(
+        `${config.FRONTEND_URL}/verify/google/callback?${params.toString()}`,
+      );
+    } catch (err: any) {
+      logger.error({ err }, "Google OAuth callback failed");
+      res.redirect(`${config.FRONTEND_URL}/verify/google?error=auth_failed`);
+    }
+  });
+
   // ─── BSV Auth middleware ───────────────────────────────────────────────
 
   app.use(
@@ -157,6 +197,7 @@ export function createApp(wallet: WalletInterface) {
   app.use(emailVerificationRouter);
   app.use(phoneVerificationRouter);
   app.use(xVerificationRouter);
+  app.use(googleVerificationRouter);
   app.use(signCertificateRouter);
 
   // ─── Error handler (must be last) ─────────────────────────────────────

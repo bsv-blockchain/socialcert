@@ -1,5 +1,5 @@
 export const CERTIFICATE_TYPES = {
-  email: 'exOl3KM0dIJ04EW5pZgbZmPag6MdJXd3/a1enmUU/BA=',
+  google: 'Kz3dpnvTRO+LzCF+X4zI1GQqRhVmgLGPWZQqG+vhVig=',
   phone: 'mffUklUzxbHr65xLohn0hRL0Tq2GjW1GYF/OPfzqJ6A=',
   x: 'vdDWvftf1H+5+ZprUw123kjHlywH+v20aPQTuXgMpNc=',
 } as const
@@ -37,13 +37,13 @@ export function getApiBaseUrl(): string {
 }
 
 export const CERT_TYPE_LABELS: Record<string, string> = {
-  [CERTIFICATE_TYPES.email]: 'Email',
+  [CERTIFICATE_TYPES.google]: 'Google',
   [CERTIFICATE_TYPES.phone]: 'Phone',
   [CERTIFICATE_TYPES.x]: 'X',
 }
 
 export const CERT_TYPE_FIELDS: Record<string, string[]> = {
-  [CERTIFICATE_TYPES.email]: ['email'],
+  [CERTIFICATE_TYPES.google]: ['email', 'name', 'profilePhoto'],
   [CERTIFICATE_TYPES.phone]: ['phoneNumber'],
   [CERTIFICATE_TYPES.x]: ['userName', 'profilePhoto'],
 }

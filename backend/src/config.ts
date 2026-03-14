@@ -25,6 +25,11 @@ const envSchema = z.object({
   X_CLIENT_SECRET: z.string().min(1, 'X_CLIENT_SECRET is required'),
   X_REDIRECT_URI: z.string().url().default('http://localhost:8080/api/verify/x/callback'),
 
+  // Google OAuth 2.0
+  GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
+  GOOGLE_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CLIENT_SECRET is required'),
+  GOOGLE_REDIRECT_URI: z.string().url().default('http://localhost:8080/api/verify/google/callback'),
+
   // Application
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   HTTP_PORT: z.coerce.number().default(8080),

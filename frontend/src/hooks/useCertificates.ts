@@ -67,9 +67,9 @@ export function useCertificates() {
             }
 
             let displayValue = ''
-            if (fields.email) displayValue = fields.email
+            if (fields.userName) displayValue = `@${fields.userName}`
             else if (fields.phoneNumber) displayValue = fields.phoneNumber
-            else if (fields.userName) displayValue = `@${fields.userName}`
+            else if (fields.email) displayValue = fields.email
 
             // Check the identity overlay for a live UTXO — if one exists, the cert is public
             const isPublic = await isPubliclyRevealed(cert.serialNumber, network as 'mainnet' | 'testnet')

@@ -4,7 +4,7 @@ import { Shell } from '@/components/layout/Shell'
 import { CertificateCard } from '@/components/CertificateCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { ScrollText, Plus, Loader2 } from 'lucide-react'
+import { ScrollText, Plus, Loader2, Globe, Lock, Trash2 } from 'lucide-react'
 import { useCertificates } from '@/hooks/useCertificates'
 import { motion } from 'framer-motion'
 
@@ -28,6 +28,37 @@ export default function Certificates() {
             <Button onClick={() => navigate('/')} size="sm">
               <Plus className="h-4 w-4" /> New Verification
             </Button>
+          </div>
+
+          {/* Visibility controls */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+            <div className="rounded-xl border border-border bg-surface p-4">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary mb-2">
+                <Globe className="h-4 w-4" />
+              </div>
+              <p className="text-xs font-medium text-text-primary mb-0.5">Make it public</p>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                Apps across the BSV ecosystem show your name instead of a raw key.
+              </p>
+            </div>
+            <div className="rounded-xl border border-border bg-surface p-4">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 mb-2">
+                <Lock className="h-4 w-4" />
+              </div>
+              <p className="text-xs font-medium text-text-primary mb-0.5">Keep it private</p>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                Stays in your wallet. Only visible to people you share it with directly.
+              </p>
+            </div>
+            <div className="rounded-xl border border-border bg-surface p-4">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 text-red-500 mb-2">
+                <Trash2 className="h-4 w-4" />
+              </div>
+              <p className="text-xs font-medium text-text-primary mb-0.5">Change your mind</p>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                Unpublish anytime, or delete entirely — removed from your wallet and the network.
+              </p>
+            </div>
           </div>
 
           {isLoading ? (
