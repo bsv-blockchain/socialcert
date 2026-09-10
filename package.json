@@ -3,6 +3,7 @@
   "scripts": {
     "dev": "docker compose up --build -d",
     "prod": "docker compose -f docker-compose.yml up --build",
-    "down": "docker compose down"
+    "down": "docker compose down",
+    "unpublish-identity": "npm --prefix backend run unpublish-identity --"
   }
 }

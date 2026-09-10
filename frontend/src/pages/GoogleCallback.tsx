@@ -5,7 +5,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, Globe, Lock } from 'lucide-react'
 import { toast } from 'sonner'
-import { getWalletClient, getAuthFetch, getIdentityClient } from '@/lib/wallet'
+import { getWalletClient, getAuthFetch } from '@/lib/wallet'
+import { publiclyRevealCertificate } from '@/lib/overlay'
 import { getCertifierConfig, getApiBaseUrl, CERTIFICATE_TYPES } from '@/lib/constants'
 import { motion } from 'framer-motion'
 
@@ -89,7 +90,7 @@ export default function GoogleCallback() {
     if (reveal && certRef.current) {
       setIsRevealing(true)
       try {
-        await getIdentityClient().publiclyRevealAttributes(certRef.current, ['email', 'name', 'profilePhoto'])
+        await publiclyRevealCertificate(certRef.current, ['email', 'name', 'profilePhoto'])
         toast.success('Your Google account is now publicly discoverable')
       } catch {
         toast.warning('Certificate issued but public revelation failed')

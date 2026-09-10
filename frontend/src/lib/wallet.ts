@@ -1,4 +1,4 @@
-import { WalletClient, AuthFetch, IdentityClient } from '@bsv/sdk'
+import { WalletClient, AuthFetch } from '@bsv/sdk'
 import type { WalletInterface } from '@bsv/sdk'
 
 let localClient: WalletClient | null = null
@@ -29,8 +29,4 @@ export function isMobileWallet(): boolean {
 
 export function getAuthFetch(): AuthFetch {
   return new AuthFetch(getWalletClient())
-}
-
-export function getIdentityClient(): IdentityClient {
-  return new IdentityClient(getWalletClient())
 }

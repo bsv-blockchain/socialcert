@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node out/index.js",
-    "dev": "tsx --watch src/index.ts"
+    "dev": "tsx --watch src/index.ts",
+    "unpublish-identity": "tsx scripts/unpublish-identity.ts"
   },
   "license": "Open BSV License",
   "dependencies": {

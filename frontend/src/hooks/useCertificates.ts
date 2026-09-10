@@ -1,19 +1,13 @@
 import { useState, useCallback } from 'react'
-import { getWalletClient, getIdentityClient } from '@/lib/wallet'
-import { getCertifierConfig, CERTIFICATE_TYPES, CERT_TYPE_LABELS } from '@/lib/constants'
+import { getWalletClient } from '@/lib/wallet'
+import { getCertifierConfig, CERTIFICATE_TYPES, CERT_TYPE_LABELS, CERT_TYPE_FIELDS } from '@/lib/constants'
 import { toast } from 'sonner'
 import { VerifiableCertificate } from '@bsv/sdk'
-import LookupResolver from '@bsv/sdk/overlay-tools/LookupResolver'
-
-async function isPubliclyRevealed(serialNumber: string, network: 'mainnet' | 'testnet'): Promise<boolean> {
-  try {
-    const resolver = new LookupResolver({ networkPreset: network })
-    const answer = await resolver.query({ service: 'ls_identity', query: { serialNumber } })
-    return answer.type === 'output-list' && answer.outputs.length > 0
-  } catch {
-    return false
-  }
-}
+import {
+  isCertificatePublic,
+  publiclyRevealCertificate,
+  revokeCertificateRevelation,
+} from '@/lib/overlay'
 
 export interface CertificateInfo {
   type: string
@@ -40,7 +34,6 @@ export function useCertificates() {
       const allCerts: CertificateInfo[] = []
 
       const { publicKey: myIdentityKey } = await wallet.getPublicKey({ identityKey: true })
-      const { network } = await wallet.getNetwork({})
 
       for (const certType of certTypes) {
         try {
@@ -72,7 +65,7 @@ export function useCertificates() {
             else if (fields.email) displayValue = fields.email
 
             // Check the identity overlay for a live UTXO — if one exists, the cert is public
-            const isPublic = await isPubliclyRevealed(cert.serialNumber, network as 'mainnet' | 'testnet')
+            const isPublic = await isCertificatePublic(cert.serialNumber)
 
             allCerts.push({
               type: cert.type,
@@ -104,8 +97,7 @@ export function useCertificates() {
 
     if (cert.isPublic) {
       try {
-        const identityClient = getIdentityClient()
-        await identityClient.revokeCertificateRevelation(cert.serialNumber)
+        await revokeCertificateRevelation(cert.serialNumber)
       } catch (err: any) {
         const msg = err?.message || String(err)
         toast.error(`Failed to revoke public attestation: ${msg}`)
@@ -129,14 +121,12 @@ export function useCertificates() {
   }, [loadCertificates])
 
   const togglePublic = useCallback(async (cert: CertificateInfo) => {
-    const identityClient = getIdentityClient()
-
     try {
       if (cert.isPublic) {
-        await identityClient.revokeCertificateRevelation(cert.serialNumber)
+        await revokeCertificateRevelation(cert.serialNumber)
       } else {
-        const fieldNames = Object.keys(cert.fields)
-        await identityClient.publiclyRevealAttributes(cert.raw, fieldNames)
+        const fieldNames = CERT_TYPE_FIELDS[cert.type] || Object.keys(cert.fields)
+        await publiclyRevealCertificate(cert.raw, fieldNames)
       }
     } catch (err: any) {
       const msg = err?.message || String(err)

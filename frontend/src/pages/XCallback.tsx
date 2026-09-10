@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Share2, Globe, Lock } from "lucide-react";
 import { XLogo } from "@/components/icons/XLogo";
 import { toast } from "sonner";
-import { getWalletClient, getAuthFetch, getIdentityClient } from "@/lib/wallet";
+import { getWalletClient, getAuthFetch } from "@/lib/wallet";
+import { publiclyRevealCertificate } from "@/lib/overlay";
 import {
   getCertifierConfig,
   getApiBaseUrl,
@@ -80,7 +81,7 @@ export default function XCallback() {
     if (reveal && certRef.current) {
       setIsRevealing(true);
       try {
-        await getIdentityClient().publiclyRevealAttributes(certRef.current, [
+        await publiclyRevealCertificate(certRef.current, [
           "userName",
           "profilePhoto",
         ]);
